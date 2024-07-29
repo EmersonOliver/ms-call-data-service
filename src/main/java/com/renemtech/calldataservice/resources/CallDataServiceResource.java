@@ -1,0 +1,84 @@
+package com.renemtech.calldataservice.resources;
+
+
+import com.renemtech.calldataservice.api.ParametersServiceClient;
+import com.renemtech.calldataservice.enuns.CallStatus;
+import com.renemtech.calldataservice.model.CallDataEntity;
+import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
+import com.renemtech.calldataservice.model.dto.UpdateCallDataRequest;
+import com.renemtech.calldataservice.service.CallDataService;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+@Path("callDataService")
+public class CallDataServiceResource {
+
+    @Inject
+    CallDataService service;
+
+    @Inject
+    @RestClient
+    ParametersServiceClient client;
+
+    @POST
+    @Path("create")
+    public Response createCallData(CreateCallDataRequest request) {
+        UUID response = service.createCallDataStart(request).orElse(null);
+        return buildResponseProtocol(response, Response.Status.OK);
+    }
+
+    @GET
+    @Path("details/{callId}")
+    public Response getCallDataServiceDetails(@PathParam("callId") String callId) {
+        return null;
+    }
+
+    @GET
+    @Path("check")
+    public Response getCallDataServiceByCallerReceiver(@QueryParam("callerReceiverNumber") String callerReceiverNumber,
+                                                       @QueryParam("callDhStart") String callDhStart,
+                                                       @QueryParam("callStatus") CallStatus status) {
+
+        return null;
+    }
+
+    @PUT
+    @Path("update/{callId}")
+    public Response updateCallerInfo(@PathParam("callId") String callId,
+                                     @QueryParam("callNumber") String callNumber,
+                                     @QueryParam("status") CallStatus status,
+                                     UpdateCallDataRequest request) {
+        Optional<CallDataEntity> response = this.service.receiverCallStatus(callId, callNumber, status, request);
+        return response.isPresent() ? buildResponse(response, Response.Status.OK)
+                : Response.notModified().build();
+    }
+
+    @Path("status")
+    @GET
+    public Response getStatus() {
+        return Response.ok(client.getParametersDeviceId("")).build();
+    }
+
+    public <T> Response buildResponseProtocol(T type, Response.Status status) {
+        if (type != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("protocol", type);
+            return Response.status(status).entity(map)
+                    .build();
+        }
+        return Response.notModified().build();
+    }
+
+    public <T> Response buildResponse(T type, Response.Status status) {
+        return Response.status(status).entity(type)
+                .build();
+    }
+
+}
