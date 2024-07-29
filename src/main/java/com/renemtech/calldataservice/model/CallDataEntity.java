@@ -1,5 +1,6 @@
 package com.renemtech.calldataservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.renemtech.calldataservice.enuns.CallStatus;
 import com.renemtech.calldataservice.enuns.CallType;
 import jakarta.persistence.*;
@@ -9,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -51,5 +53,8 @@ public class CallDataEntity {
     @Column(name = "carrier")
     private String carrier;
 
+    @JsonIgnoreProperties("callData")
+    @OneToMany(mappedBy = "callData", fetch = FetchType.EAGER)
+    private List<CallerLocationEntity> callerLocations;
 
 }

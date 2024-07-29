@@ -4,6 +4,7 @@ package com.renemtech.calldataservice.resources;
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
 import com.renemtech.calldataservice.model.CallDataEntity;
+import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
 import com.renemtech.calldataservice.model.dto.UpdateCallDataRequest;
 import com.renemtech.calldataservice.service.CallDataService;
@@ -37,7 +38,8 @@ public class CallDataServiceResource {
     @GET
     @Path("details/{callId}")
     public Response getCallDataServiceDetails(@PathParam("callId") String callId) {
-        return null;
+        CallDataDetailsResponse response = this.service.detailsCallData(callId);
+        return buildResponse(response, Response.Status.OK);
     }
 
     @GET

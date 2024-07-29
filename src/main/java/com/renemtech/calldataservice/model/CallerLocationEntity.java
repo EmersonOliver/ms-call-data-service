@@ -1,5 +1,7 @@
 package com.renemtech.calldataservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -74,6 +76,7 @@ public class CallerLocationEntity {
     @Column(name = "billing_type ")
     private String billingType;
 
+    @JsonIgnoreProperties("callerLocations")
     @ManyToOne
     @JoinColumn(name = "fk_call_id", referencedColumnName = "call_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "fk_call_id_call_data"))
     private CallDataEntity callData;
