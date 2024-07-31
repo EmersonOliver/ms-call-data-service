@@ -8,9 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Builder
 @Data
 @AllArgsConstructor
@@ -19,8 +16,6 @@ public class UpdateCallDataRequest {
 
     private String callerNumber;
     private String receiverNumber;
-    private LocalDateTime callStartTime;
-    private LocalDateTime callEndTime;
     private CallType callType;
     private CallStatus callStatus;
     private String carrier;
@@ -30,9 +25,5 @@ public class UpdateCallDataRequest {
     private String receiverDeviceImei;
     private String receiverNetworkType;
     private String receiverAreaCode;
-    private String audioQuality;
-    private String videoQuality;
-    private BigDecimal callCost;
-    private String billingType;
 
 }

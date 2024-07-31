@@ -1,6 +1,7 @@
 package com.renemtech.calldataservice.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
 import com.renemtech.calldataservice.model.CallDataEntity;
@@ -9,17 +10,22 @@ import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CallerDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
 import com.renemtech.calldataservice.model.dto.UpdateCallDataRequest;
+import com.renemtech.calldataservice.rabbitmq.message.Quarantine;
+import com.renemtech.calldataservice.rabbitmq.producer.CallDataQuarantineProducer;
 import com.renemtech.calldataservice.repository.CallDataServiceRepository;
 import com.renemtech.calldataservice.repository.CallLocationDataRespository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 @ApplicationScoped
 public class CallDataService {
@@ -30,6 +36,9 @@ public class CallDataService {
 
     @Inject
     private CallLocationDataRespository callLocationDataRespository;
+
+    @Inject
+    private CallDataQuarantineProducer producer;
 
     @Inject
     @RestClient
@@ -64,8 +73,7 @@ public class CallDataService {
 
     @Transactional
     public Optional<CallDataEntity> receiverCallStatus(String callId, String callerNumber, CallStatus status, UpdateCallDataRequest request) {
-
-         CallDataEntity callDataEntity =
+        CallDataEntity callDataEntity =
                 this.callDataServiceRepository.findById(UUID.fromString(callId));
 
         CallerLocationEntity callerLocationEntity =
@@ -74,8 +82,10 @@ public class CallDataService {
         if (!callDataEntity.getCallerNumber().replace("+", "").equals(callerNumber)) {
             return Optional.empty();
         }
+
         callDataEntity.setCallStatus(status);
         status.build(callDataEntity);
+
         this.callDataServiceRepository.persistAndFlush(callDataEntity);
 
         if (callerLocationEntity != null) {
@@ -91,19 +101,19 @@ public class CallDataService {
     }
 
     @Transactional
-    public CallDataDetailsResponse detailsCallData(String callID){
+    public CallDataDetailsResponse detailsCallData(String callID) {
         CallDataEntity callDataEntity = this.callDataServiceRepository.findById(UUID.fromString(callID));
         List<CallerDataDetailsResponse> callerDetails =
-                callDataEntity.getCallerLocations().stream().map(detail-> CallerDataDetailsResponse
-                        .builder().billingType(detail.getBillingType()).callCost(detail.getCallCost()).callerLocation(detail.getCallerLocation())
-                                .callerNetworkType(detail.getCallerNetworkType()).callerLongitude(detail.getCallerLongitude())
-                                .receiverAreaCode(detail.getReceiverAreaCode())
-                                .callerLatitude(detail.getCallerLatitude())
-                                .receiverLongitude(detail.getReceiverLongitude())
-                                .receiverDeviceImei(detail.getReceiverDeviceImei()).receiverDeviceModel(detail.getReceiverDeviceModel())
-                                .receiverLatitude(detail.getReceiverLatitude()).videoQuality(detail.getVideoQuality())
-                                .build())
-                        .toList();
+                callDataEntity.getCallerLocations().stream().map(detail -> CallerDataDetailsResponse
+                        .builder().callerLocation(detail.getCallerLocation())
+                        .callerLongitude(detail.getCallerLongitude())
+                        .receiverAreaCode(detail.getReceiverAreaCode())
+                        .callerLatitude(detail.getCallerLatitude())
+                        .receiverLongitude(detail.getReceiverLongitude())
+                        .receiverDeviceImei(detail.getReceiverDeviceImei()).receiverDeviceModel(detail.getReceiverDeviceModel())
+                        .receiverLatitude(detail.getReceiverLatitude())
+                        .build()).toList();
+
         return CallDataDetailsResponse.builder()
                 .callDuration(callDataEntity.getCallDuration())
                 .callDhEnd(callDataEntity.getCallDhEnd())
@@ -118,4 +128,29 @@ public class CallDataService {
                 .build();
     }
 
+    public Map<String, Object> checkCallByCaller(String callid, String callerReceiverNumber, String callDhStart, CallStatus status) {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            Date dateCallDhStart = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(callDhStart);
+            this.callDataServiceRepository.findByIdOptional(UUID.fromString(callid))
+                    .filter(call -> validateDhStartCall(call.getCallDhStart(), dateCallDhStart) && call.getCallStatus().equals(status)
+                            && call.getReceiveNumber().equals(callerReceiverNumber))
+                    .stream().findFirst()
+                    .orElseThrow(IllegalArgumentException::new);
+            response.put("checked", "OK");
+            return response;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendoToQuarantine(Quarantine quarantine) {
+        this.producer.sendMessage(quarantine);
+    }
+
+    private Boolean validateDhStartCall(Date dhStart, Date dhStartRequest) {
+        LocalDateTime localDateTimeStart = dhStart.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime localDateTimeStartReq = dhStartRequest.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return localDateTimeStart.isAfter(localDateTimeStartReq);
+    }
 }

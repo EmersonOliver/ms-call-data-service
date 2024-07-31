@@ -24,11 +24,8 @@ public class CallerDataDetailsResponse {
     private String callerDeviceImei;
     private String receiverDeviceModel;
     private String receiverDeviceImei;
-    private String callerNetworkType;
     private String receiverNetworkType;
     private String callerAreaCode;
     private String receiverAreaCode;
-    private String videoQuality;
-    private BigDecimal callCost;
-    private String billingType;
+
 }

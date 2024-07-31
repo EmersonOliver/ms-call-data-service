@@ -7,6 +7,7 @@ import com.renemtech.calldataservice.model.CallDataEntity;
 import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
 import com.renemtech.calldataservice.model.dto.UpdateCallDataRequest;
+import com.renemtech.calldataservice.rabbitmq.message.Quarantine;
 import com.renemtech.calldataservice.service.CallDataService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -43,12 +44,12 @@ public class CallDataServiceResource {
     }
 
     @GET
-    @Path("check")
-    public Response getCallDataServiceByCallerReceiver(@QueryParam("callerReceiverNumber") String callerReceiverNumber,
+    @Path("check/{callid}")
+    public Response getCallDataServiceByCallerReceiver(@PathParam("callid") String callid,
+                                                       @QueryParam("callerReceiverNumber") String callerReceiverNumber,
                                                        @QueryParam("callDhStart") String callDhStart,
                                                        @QueryParam("callStatus") CallStatus status) {
-
-        return null;
+        return buildResponse( this.service.checkCallByCaller(callid, callerReceiverNumber, callDhStart, status), Response.Status.OK);
     }
 
     @PUT
@@ -62,8 +63,15 @@ public class CallDataServiceResource {
                 : Response.notModified().build();
     }
 
-    @Path("status")
+    @POST
+    @Path("toQuarantine")
+    public Response sendToQuarantine(Quarantine req) {
+        this.service.sendoToQuarantine(req);
+        return Response.accepted().build();
+    }
+
     @GET
+    @Path("status")
     public Response getStatus() {
         return Response.ok(client.getParametersDeviceId("")).build();
     }

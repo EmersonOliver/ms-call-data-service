@@ -52,9 +52,6 @@ public class CallerLocationEntity {
     @Column(name = "receiver_device_imei")
     private String receiverDeviceImei;
 
-    @Column(name = "caller_network_type")
-    private String callerNetworkType;
-
     @Column(name = "receiver_network_type")
     private String receiverNetworkType;
 
@@ -64,17 +61,6 @@ public class CallerLocationEntity {
     @Column(name = "receiver_area_code")
     private String receiverAreaCode;
 
-    @Column(name = "audio_quality")
-    private String audioQuality;
-
-    @Column(name = "video_quality")
-    private String videoQuality;
-
-    @Column(name = "call_cost")
-    private BigDecimal callCost;
-
-    @Column(name = "billing_type ")
-    private String billingType;
 
     @JsonIgnoreProperties("callerLocations")
     @ManyToOne

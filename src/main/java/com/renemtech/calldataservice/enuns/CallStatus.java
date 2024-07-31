@@ -21,7 +21,9 @@ public enum CallStatus {
         //Chamada perdida.
         @Override
         public void build(CallDataEntity call) {
-
+            Date callTimestamp = new Date();
+            call.setCallDhStart(callTimestamp);
+            call.setCallDhEnd(callTimestamp);
         }
     },
     REJECTED {
@@ -38,44 +40,49 @@ public enum CallStatus {
         //Destinatário estava ocupado.
         @Override
         public void build(CallDataEntity call) {
-
+            Date callTimestamp = new Date();
+            call.setCallDhStart(callTimestamp);
+            call.setCallDhEnd(callTimestamp);
         }
     },
     FAILED {
         //Falha ao tentar completar a chamada.
         @Override
         public void build(CallDataEntity call) {
-
+            Date callTimestamp = new Date();
+            call.setCallDhStart(callTimestamp);
+            call.setCallDhEnd(callTimestamp);
         }
     },
     IN_PROGRESS {
         //Chamada em andamento.
         @Override
         public void build(CallDataEntity call) {
-
+            Date callTimestamp = new Date();
+            call.setCallDhStart(callTimestamp);
         }
     },
     ON_HOLD {
         //Chamada em espera.
         @Override
         public void build(CallDataEntity call) {
-
+            return;
         }
     },
     TRANSFERRED {
         //Chamada transferida para outro número.
         @Override
         public void build(CallDataEntity call) {
-
+            return;
         }
     },
     CANCELLED {
         //Chamada cancelada
         @Override
         public void build(CallDataEntity call) {
-            Date startCall = new Date();
-            call.setCallDhStart(startCall);
-            call.setCallDhEnd(startCall);
+            Date callTimestamp = new Date();
+            call.setCallDhStart(callTimestamp);
+            call.setCallDhEnd(callTimestamp);
         }
     },
     ACCEPTED {
