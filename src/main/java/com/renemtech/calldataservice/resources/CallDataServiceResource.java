@@ -3,7 +3,7 @@ package com.renemtech.calldataservice.resources;
 
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
-import com.renemtech.calldataservice.model.CallDataEntity;
+import com.renemtech.calldataservice.model.ReceiverCallEntity;
 import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
 import com.renemtech.calldataservice.model.dto.UpdateCallDataRequest;
@@ -58,7 +58,7 @@ public class CallDataServiceResource {
                                      @QueryParam("callNumber") String callNumber,
                                      @QueryParam("status") CallStatus status,
                                      UpdateCallDataRequest request) {
-        Optional<CallDataEntity> response = this.service.receiverCallStatus(callId, callNumber, status, request);
+        Optional<ReceiverCallEntity> response = this.service.receiverCallUpdate(callId, callNumber, status, request);
         return response.isPresent() ? buildResponse(response, Response.Status.OK)
                 : Response.notModified().build();
     }

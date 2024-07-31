@@ -1,11 +1,14 @@
 package com.renemtech.calldataservice.model.dto;
 
+import com.renemtech.calldataservice.enuns.CallStatus;
+import com.renemtech.calldataservice.enuns.CallType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
 @Builder
@@ -18,14 +21,13 @@ public class CallerDataDetailsResponse {
     private UUID callId;
     private Double callerLatitude;
     private Double callerLongitude;
-    private Double receiverLatitude;
-    private Double receiverLongitude;
     private String callerDeviceModel;
     private String callerDeviceImei;
-    private String receiverDeviceModel;
-    private String receiverDeviceImei;
-    private String receiverNetworkType;
     private String callerAreaCode;
-    private String receiverAreaCode;
+    private Date callDhStart;
+    private Date callDhEnd;
+    private String callDuration;
+    private CallType callType;
+    private CallStatus callStatus;
 
 }

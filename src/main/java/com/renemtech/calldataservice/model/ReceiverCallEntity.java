@@ -20,41 +20,36 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "call_data")
-public class CallDataEntity {
+public class ReceiverCallEntity {
 
     @Id
     @Column(name = "call_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID callId;
 
-    @Column(name = "caller_number")
-    private String callerNumber;
-
     @Column(name = "receive_number")
     private String receiveNumber;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "call_dh_start")
-    private Date callDhStart;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "call_dh_end")
-    private Date callDhEnd;
-
-    @Column(name = "call_duration")
-    private String callDuration;
-
-    @Column(name = "call_type")
-    private CallType callType;
-
-    @Column(name = "call_status")
-    private CallStatus callStatus;
 
     @Column(name = "carrier")
     private String carrier;
 
+    @Column(name = "receiver_area_code")
+    private String receiverAreaCode;
+
+    @Column(name = "receiver_latitude")
+    private Double receiverLatitude;
+
+    @Column(name = "receiver_longitude")
+    private Double receiverLongitude;
+
+    @Column(name = "receiver_device_model")
+    private String receiverDeviceModel;
+
+    @Column(name = "receiver_device_imei")
+    private String receiverDeviceImei;
+
     @JsonIgnoreProperties("callData")
     @OneToMany(mappedBy = "callData", fetch = FetchType.EAGER)
-    private List<CallerLocationEntity> callerLocations;
+    private List<CallerCallEntity> callerLocations;
 
 }

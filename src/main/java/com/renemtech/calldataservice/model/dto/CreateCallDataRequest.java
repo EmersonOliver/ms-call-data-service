@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateCallDataRequest {
-
-
     private String callerNumber;
     private String receiverNumber;
     private CallType callType;

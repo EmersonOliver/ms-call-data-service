@@ -19,13 +19,7 @@ import java.util.UUID;
 public class CallDataDetailsResponse {
 
     private UUID callId;
-    private String callerNumber;
     private String receiveNumber;
-    private Date callDhStart;
-    private Date callDhEnd;
-    private String callDuration;
-    private CallType callType;
-    private CallStatus callStatus;
     private String carrier;
     private List<CallerDataDetailsResponse> details;
 

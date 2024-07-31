@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateCallDataRequest {
 
-    private String callerNumber;
     private String receiverNumber;
     private CallType callType;
     private CallStatus callStatus;

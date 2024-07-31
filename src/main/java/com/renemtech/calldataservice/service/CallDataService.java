@@ -4,8 +4,8 @@ package com.renemtech.calldataservice.service;
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
 import com.renemtech.calldataservice.exceptions.BusinessException;
-import com.renemtech.calldataservice.model.CallDataEntity;
-import com.renemtech.calldataservice.model.CallerLocationEntity;
+import com.renemtech.calldataservice.model.ReceiverCallEntity;
+import com.renemtech.calldataservice.model.CallerCallEntity;
 import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CallerDataDetailsResponse;
 import com.renemtech.calldataservice.model.dto.CreateCallDataRequest;
@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Stream;
 
 @ApplicationScoped
 public class CallDataService {
@@ -44,85 +45,85 @@ public class CallDataService {
 
     @Transactional
     public Optional<UUID> createCallDataStart(CreateCallDataRequest request) {
-        CallDataEntity callDataEntity = CallDataEntity.builder()
-                .callerNumber(request.getCallerNumber())
-                .callStatus(request.getCallStatus())
-                .callType(request.getCallType())
-                .carrier(request.getCarrier())
+        ReceiverCallEntity receiverEntity = ReceiverCallEntity.builder()
                 .receiveNumber(request.getReceiverNumber())
                 .build();
 
-        callDataServiceRepository.persistAndFlush(callDataEntity);
+        callDataServiceRepository.persistAndFlush(receiverEntity);
 
-        CallerLocationEntity callerLocationEntity
-                = CallerLocationEntity.builder()
-                .callId(callDataEntity.getCallId())
+        CallerCallEntity callerEntity
+                = CallerCallEntity.builder()
+                .callId(receiverEntity.getCallId())
                 .callerAreaCode(request.getCallerAreaCode())
                 .callerDeviceImei(request.getCallerDeviceImei())
                 .callerDeviceModel(request.getCallerDeviceModel())
                 .callerLatitude(request.getCallerLatitude())
                 .callerLongitude(request.getCallerLongitude())
-                .callData(callDataEntity)
+                .callerNumber(request.getCallerNumber())
+                .callType(request.getCallType())
+                .callData(receiverEntity)
                 .build();
-        callLocationDataRespository.persistAndFlush(callerLocationEntity);
+        callLocationDataRespository.persistAndFlush(callerEntity);
 
-        return Optional.of(callDataEntity.getCallId());
+        return Optional.of(receiverEntity.getCallId());
     }
 
     @Transactional
-    public Optional<CallDataEntity> receiverCallStatus(String callId, String callerNumber, CallStatus status, UpdateCallDataRequest request) {
-        CallDataEntity callDataEntity =
+    public Optional<ReceiverCallEntity> receiverCallUpdate(String callId, String callerNumber, CallStatus status, UpdateCallDataRequest request) {
+
+        ReceiverCallEntity receiverEntity =
                 this.callDataServiceRepository.findById(UUID.fromString(callId));
 
-        CallerLocationEntity callerLocationEntity =
-                this.callLocationDataRespository.findLocationByDataCall(callDataEntity.getCallId()).orElse(null);
+        CallerCallEntity callerEntity =
+                this.callLocationDataRespository.findLocationByDataCall(receiverEntity.getCallId())
+                        .orElseThrow(BusinessException::notDataFound);
 
-        if (!callDataEntity.getCallerNumber().replace("+", "").equals(callerNumber)) {
-            return Optional.empty();
+        if(!callerEntity.getCallerNumber().equals(callerNumber)) {
+            throw  new BusinessException("Caller Number is not equals in hash call");
         }
 
-        callDataEntity.setCallStatus(status);
-        status.build(callDataEntity);
+        callerEntity.setCallStatus(status);
+        status.build(callerEntity);
 
-        this.callDataServiceRepository.persistAndFlush(callDataEntity);
+        receiverEntity.setReceiverDeviceModel(request.getReceiverDeviceModel());
+        receiverEntity.setReceiveNumber(request.getReceiverNumber());
+        receiverEntity.setReceiverLongitude(request.getReceiverLongitude());
+        receiverEntity.setReceiverLatitude(request.getReceiverLatitude());
+        receiverEntity.setReceiverAreaCode(request.getReceiverAreaCode());
+        receiverEntity.setReceiverDeviceImei(request.getReceiverDeviceImei());
 
-        if (callerLocationEntity != null) {
-            callerLocationEntity.setReceiverAreaCode(request.getReceiverAreaCode());
-            callerLocationEntity.setReceiverLatitude(request.getReceiverLatitude());
-            callerLocationEntity.setReceiverLongitude(request.getReceiverLongitude());
-            callerLocationEntity.setReceiverDeviceImei(request.getReceiverDeviceImei());
-            callerLocationEntity.setReceiverNetworkType(request.getReceiverNetworkType());
-            callerLocationEntity.setReceiverDeviceModel(request.getReceiverDeviceModel());
-            this.callLocationDataRespository.persistAndFlush(callerLocationEntity);
-        }
-        return Optional.of(callDataEntity);
+        this.callDataServiceRepository.persistAndFlush(receiverEntity);
+        return Optional.of(receiverEntity);
     }
 
     @Transactional
     public CallDataDetailsResponse detailsCallData(String callID) {
-        CallDataEntity callDataEntity = this.callDataServiceRepository.findById(UUID.fromString(callID));
+        ReceiverCallEntity receiverCallEntity = this.callDataServiceRepository.findById(UUID.fromString(callID));
+
         List<CallerDataDetailsResponse> callerDetails =
-                callDataEntity.getCallerLocations().stream().map(detail -> CallerDataDetailsResponse
+                receiverCallEntity.getCallerLocations().stream().map(detail -> CallerDataDetailsResponse
                         .builder().callerLocation(detail.getCallerLocation())
                         .callerLongitude(detail.getCallerLongitude())
-                        .receiverAreaCode(detail.getReceiverAreaCode())
+                        .callerAreaCode(detail.getCallerAreaCode())
                         .callerLatitude(detail.getCallerLatitude())
-                        .receiverLongitude(detail.getReceiverLongitude())
-                        .receiverDeviceImei(detail.getReceiverDeviceImei()).receiverDeviceModel(detail.getReceiverDeviceModel())
-                        .receiverLatitude(detail.getReceiverLatitude())
+                        .callerLongitude(detail.getCallerLongitude())
+                        .callerDeviceImei(detail.getCallerDeviceImei()).callerDeviceModel(detail.getCallerDeviceModel())
+                        .callerLatitude(detail.getCallerLatitude())
+                        .callId(detail.getCallId())
+                        .callDuration(detail.getCallDuration())
+                        .callType(detail.getCallType())
+                        .callDhEnd(detail.getCallDhEnd())
+                        .callDhStart(detail.getCallDhStart())
+                        .callType(detail.getCallType())
+                        .callStatus(detail.getCallStatus())
+                        .callType(detail.getCallType())
                         .build()).toList();
 
         return CallDataDetailsResponse.builder()
-                .callDuration(callDataEntity.getCallDuration())
-                .callDhEnd(callDataEntity.getCallDhEnd())
-                .callDhStart(callDataEntity.getCallDhStart())
+                .callId(receiverCallEntity.getCallId())
+                .receiveNumber(receiverCallEntity.getReceiveNumber())
+                .carrier(receiverCallEntity.getCarrier())
                 .details(callerDetails)
-                .callerNumber(callDataEntity.getCallerNumber())
-                .callId(callDataEntity.getCallId())
-                .callStatus(callDataEntity.getCallStatus())
-                .receiveNumber(callDataEntity.getReceiveNumber())
-                .carrier(callDataEntity.getCarrier())
-                .callType(callDataEntity.getCallType())
                 .build();
     }
 
@@ -130,11 +131,13 @@ public class CallDataService {
         try {
             Map<String, Object> response = new HashMap<>();
             Date dateCallDhStart = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(callDhStart);
-            this.callDataServiceRepository.findByIdOptional(UUID.fromString(callid))
-                    .filter(call -> validateDhStartCall(call.getCallDhStart(), dateCallDhStart) && call.getCallStatus().equals(status)
-                            && call.getReceiveNumber().equals(callerReceiverNumber))
-                    .stream().findFirst()
+            this.callDataServiceRepository.findByIdOptional(UUID.fromString(callid)).map(ReceiverCallEntity::getCallerLocations)
+                    .map(List::stream).flatMap(Stream::findFirst)
+                    .filter(call -> validateDhStartCall(call.getCallDhStart(), dateCallDhStart)
+                            && call.getCallStatus().equals(status)
+                            && call.getCallerNumber().equals(callerReceiverNumber))
                     .orElseThrow(BusinessException::notDataFound);
+
             response.put("checked", "OK");
             return response;
         } catch (ParseException e) {
