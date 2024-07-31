@@ -1,7 +1,6 @@
 package com.renemtech.calldataservice.service;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
 import com.renemtech.calldataservice.model.CallDataEntity;
@@ -17,10 +16,8 @@ import com.renemtech.calldataservice.repository.CallLocationDataRespository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -32,17 +29,17 @@ public class CallDataService {
 
 
     @Inject
-    private CallDataServiceRepository callDataServiceRepository;
+    CallDataServiceRepository callDataServiceRepository;
 
     @Inject
-    private CallLocationDataRespository callLocationDataRespository;
+    CallLocationDataRespository callLocationDataRespository;
 
     @Inject
-    private CallDataQuarantineProducer producer;
+    CallDataQuarantineProducer producer;
 
     @Inject
     @RestClient
-    private ParametersServiceClient client;
+    ParametersServiceClient client;
 
     @Transactional
     public Optional<UUID> createCallDataStart(CreateCallDataRequest request) {

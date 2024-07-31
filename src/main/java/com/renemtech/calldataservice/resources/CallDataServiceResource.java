@@ -49,7 +49,7 @@ public class CallDataServiceResource {
                                                        @QueryParam("callerReceiverNumber") String callerReceiverNumber,
                                                        @QueryParam("callDhStart") String callDhStart,
                                                        @QueryParam("callStatus") CallStatus status) {
-        return buildResponse( this.service.checkCallByCaller(callid, callerReceiverNumber, callDhStart, status), Response.Status.OK);
+        return buildResponse(this.service.checkCallByCaller(callid, callerReceiverNumber, callDhStart, status), Response.Status.OK);
     }
 
     @PUT
