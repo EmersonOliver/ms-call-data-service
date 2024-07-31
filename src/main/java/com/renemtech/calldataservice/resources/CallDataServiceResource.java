@@ -64,7 +64,7 @@ public class CallDataServiceResource {
     }
 
     @POST
-    @Path("toQuarantine")
+    @Path("sendTo/quarantine")
     public Response sendToQuarantine(Quarantine req) {
         this.service.sendoToQuarantine(req);
         return Response.accepted().build();

@@ -3,6 +3,7 @@ package com.renemtech.calldataservice.service;
 
 import com.renemtech.calldataservice.api.ParametersServiceClient;
 import com.renemtech.calldataservice.enuns.CallStatus;
+import com.renemtech.calldataservice.exceptions.BusinessException;
 import com.renemtech.calldataservice.model.CallDataEntity;
 import com.renemtech.calldataservice.model.CallerLocationEntity;
 import com.renemtech.calldataservice.model.dto.CallDataDetailsResponse;
@@ -133,7 +134,7 @@ public class CallDataService {
                     .filter(call -> validateDhStartCall(call.getCallDhStart(), dateCallDhStart) && call.getCallStatus().equals(status)
                             && call.getReceiveNumber().equals(callerReceiverNumber))
                     .stream().findFirst()
-                    .orElseThrow(IllegalArgumentException::new);
+                    .orElseThrow(BusinessException::notDataFound);
             response.put("checked", "OK");
             return response;
         } catch (ParseException e) {
