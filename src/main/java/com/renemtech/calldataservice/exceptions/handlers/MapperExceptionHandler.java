@@ -25,6 +25,10 @@ public class MapperExceptionHandler implements ExceptionMapper<Exception> {
                 status = ((BusinessException) exception).getStatus();
                 errorMapper.setStatus(status.getReasonPhrase());
             }
+            if(((BusinessException) exception).getResponseStatus() != null) {
+                status = ((BusinessException)exception).getResponseStatus();
+                errorMapper.setStatus(status.getReasonPhrase());
+            }
         }
         return Response.status(status).entity(errorMapper).build();
     }

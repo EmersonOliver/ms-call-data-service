@@ -19,7 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "call_data")
+@Table(name = "set_receiver_call")
 public class ReceiverCallEntity {
 
     @Id

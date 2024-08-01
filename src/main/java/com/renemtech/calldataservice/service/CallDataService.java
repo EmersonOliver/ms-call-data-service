@@ -14,11 +14,14 @@ import com.renemtech.calldataservice.rabbitmq.message.Quarantine;
 import com.renemtech.calldataservice.rabbitmq.producer.CallDataQuarantineProducer;
 import com.renemtech.calldataservice.repository.CallDataServiceRepository;
 import com.renemtech.calldataservice.repository.CallLocationDataRespository;
+import com.renemtech.calldataservice.utils.CryptoUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -44,12 +47,13 @@ public class CallDataService {
     ParametersServiceClient client;
 
     @Transactional
-    public Optional<UUID> createCallDataStart(CreateCallDataRequest request) {
+    public Map<String, Object> createCallDataStart(CreateCallDataRequest request) throws NoSuchAlgorithmException {
         ReceiverCallEntity receiverEntity = ReceiverCallEntity.builder()
                 .receiveNumber(request.getReceiverNumber())
                 .build();
 
         callDataServiceRepository.persistAndFlush(receiverEntity);
+        Map<String, Object> mapsAuth = CryptoUtils.generateAuthCall(request.getCallerNumber());
 
         CallerCallEntity callerEntity
                 = CallerCallEntity.builder()
@@ -61,15 +65,19 @@ public class CallDataService {
                 .callerLongitude(request.getCallerLongitude())
                 .callerNumber(request.getCallerNumber())
                 .callType(request.getCallType())
+                .hashCall(String.valueOf(mapsAuth.get("hash")))
                 .callData(receiverEntity)
                 .build();
         callLocationDataRespository.persistAndFlush(callerEntity);
+        mapsAuth.put("callId", callerEntity.getCallId());
+        mapsAuth.remove("hash");
 
-        return Optional.of(receiverEntity.getCallId());
+
+        return mapsAuth;
     }
 
     @Transactional
-    public Optional<ReceiverCallEntity> receiverCallUpdate(String callId, String callerNumber, CallStatus status, UpdateCallDataRequest request) {
+    public Optional<ReceiverCallEntity> receiverCallUpdate(String callId, String callerNumber, CallStatus status, UpdateCallDataRequest request, String salt) throws NoSuchAlgorithmException {
 
         ReceiverCallEntity receiverEntity =
                 this.callDataServiceRepository.findById(UUID.fromString(callId));
@@ -77,14 +85,16 @@ public class CallDataService {
         CallerCallEntity callerEntity =
                 this.callLocationDataRespository.findLocationByDataCall(receiverEntity.getCallId())
                         .orElseThrow(BusinessException::notDataFound);
-
-        if(!callerEntity.getCallerNumber().equals(callerNumber)) {
-            throw  new BusinessException("Caller Number is not equals in hash call");
+        if (!CryptoUtils.validatePassword(callerNumber, callerEntity.getHashCall(), salt)) {
+            throw new BusinessException("You are receiving a suspicious call!");
+        }
+        if (!callerEntity.getCallerNumber().equals(callerNumber)) {
+            throw new BusinessException("Caller Number is not equals in hash call", Response.Status.CONFLICT);
         }
 
         callerEntity.setCallStatus(status);
         status.build(callerEntity);
-
+        receiverEntity.setCarrier(request.getCarrier());
         receiverEntity.setReceiverDeviceModel(request.getReceiverDeviceModel());
         receiverEntity.setReceiveNumber(request.getReceiverNumber());
         receiverEntity.setReceiverLongitude(request.getReceiverLongitude());

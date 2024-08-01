@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "caller_location")
+@Table(name = "set_caller_call")
 @SequenceGenerator(name = "sq_id_caller_location", sequenceName = "seq_caller_location", initialValue = 1, allocationSize = 1)
 public class CallerCallEntity {
 
@@ -31,6 +31,9 @@ public class CallerCallEntity {
 
     @Column(name = "fk_call_id")
     private UUID callId;
+
+    @Column(name = "hash_call")
+    private String hashCall;
 
     @Column(name = "caller_latitude")
     private Double callerLatitude;

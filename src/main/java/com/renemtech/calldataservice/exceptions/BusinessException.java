@@ -13,6 +13,9 @@ public class BusinessException extends RuntimeException {
     @Getter
     private static Response.Status status;
 
+    @Getter
+    private Response.Status responseStatus;
+
     public BusinessException() {
     }
 
@@ -33,5 +36,10 @@ public class BusinessException extends RuntimeException {
     public BusinessException(String message, Throwable cause) {
         super(message, cause);
         this.msg = message;
+    }
+    public BusinessException(String message, Response.Status status) {
+        super(message);
+        this.msg = message;
+        this.responseStatus = status;
     }
 }

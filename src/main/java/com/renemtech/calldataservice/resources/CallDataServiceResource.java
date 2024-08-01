@@ -14,6 +14,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +32,8 @@ public class CallDataServiceResource {
 
     @POST
     @Path("create")
-    public Response createCallData(CreateCallDataRequest request) {
-        UUID response = service.createCallDataStart(request).orElse(null);
+    public Response createCallData(CreateCallDataRequest request) throws NoSuchAlgorithmException {
+        Map<String,Object> response = service.createCallDataStart(request);
         return buildResponseProtocol(response, Response.Status.OK);
     }
 
@@ -57,8 +58,9 @@ public class CallDataServiceResource {
     public Response updateCallerInfo(@PathParam("callId") String callId,
                                      @QueryParam("callNumber") String callNumber,
                                      @QueryParam("status") CallStatus status,
-                                     UpdateCallDataRequest request) {
-        Optional<ReceiverCallEntity> response = this.service.receiverCallUpdate(callId, callNumber, status, request);
+                                     @HeaderParam("salt") String salt,
+                                     UpdateCallDataRequest request) throws NoSuchAlgorithmException {
+        Optional<ReceiverCallEntity> response = this.service.receiverCallUpdate(callId, callNumber, status, request, salt);
         return response.isPresent() ? buildResponse(response, Response.Status.OK)
                 : Response.notModified().build();
     }
@@ -79,7 +81,7 @@ public class CallDataServiceResource {
     public <T> Response buildResponseProtocol(T type, Response.Status status) {
         if (type != null) {
             Map<String, Object> map = new HashMap<>();
-            map.put("protocol", type);
+            map.put("result", type);
             return Response.status(status).entity(map)
                     .build();
         }
