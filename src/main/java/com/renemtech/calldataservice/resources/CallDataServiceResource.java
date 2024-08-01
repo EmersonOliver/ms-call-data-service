@@ -12,6 +12,7 @@ import com.renemtech.calldataservice.service.CallDataService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.security.NoSuchAlgorithmException;
@@ -32,7 +33,7 @@ public class CallDataServiceResource {
 
     @POST
     @Path("create")
-    public Response createCallData(CreateCallDataRequest request) throws NoSuchAlgorithmException {
+    public Response createCallData(CreateCallDataRequest request)  {
         Map<String,Object> response = service.createCallDataStart(request);
         return buildResponseProtocol(response, Response.Status.OK);
     }
@@ -47,10 +48,11 @@ public class CallDataServiceResource {
     @GET
     @Path("check/{callid}")
     public Response getCallDataServiceByCallerReceiver(@PathParam("callid") String callid,
+                                                       @HeaderParam("salt") String salt,
                                                        @QueryParam("callerReceiverNumber") String callerReceiverNumber,
                                                        @QueryParam("callDhStart") String callDhStart,
                                                        @QueryParam("callStatus") CallStatus status) {
-        return buildResponse(this.service.checkCallByCaller(callid, callerReceiverNumber, callDhStart, status), Response.Status.OK);
+        return buildResponse(this.service.checkCallByCaller(callid, callerReceiverNumber, callDhStart, status, salt), Response.Status.OK);
     }
 
     @PUT

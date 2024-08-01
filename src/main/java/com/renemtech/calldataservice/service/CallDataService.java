@@ -47,7 +47,7 @@ public class CallDataService {
     ParametersServiceClient client;
 
     @Transactional
-    public Map<String, Object> createCallDataStart(CreateCallDataRequest request) throws NoSuchAlgorithmException {
+    public Map<String, Object> createCallDataStart(CreateCallDataRequest request)  {
         ReceiverCallEntity receiverEntity = ReceiverCallEntity.builder()
                 .receiveNumber(request.getReceiverNumber())
                 .build();
@@ -137,13 +137,14 @@ public class CallDataService {
                 .build();
     }
 
-    public Map<String, Object> checkCallByCaller(String callid, String callerReceiverNumber, String callDhStart, CallStatus status) {
+    public Map<String, Object> checkCallByCaller(String callid, String callerReceiverNumber, String callDhStart, CallStatus status, String salt) {
         try {
             Map<String, Object> response = new HashMap<>();
             Date dateCallDhStart = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(callDhStart);
             this.callDataServiceRepository.findByIdOptional(UUID.fromString(callid)).map(ReceiverCallEntity::getCallerLocations)
                     .map(List::stream).flatMap(Stream::findFirst)
                     .filter(call -> validateDhStartCall(call.getCallDhStart(), dateCallDhStart)
+                            && CryptoUtils.validatePassword(call.getCallerNumber(), call.getHashCall(), salt)
                             && call.getCallStatus().equals(status)
                             && call.getCallerNumber().equals(callerReceiverNumber))
                     .orElseThrow(BusinessException::notDataFound);

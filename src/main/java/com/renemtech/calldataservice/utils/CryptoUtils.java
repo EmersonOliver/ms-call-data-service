@@ -1,5 +1,7 @@
 package com.renemtech.calldataservice.utils;
 
+import com.renemtech.calldataservice.exceptions.BusinessException;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -12,20 +14,29 @@ public class CryptoUtils {
     private CryptoUtils() {
     }
 
-    public static Map<String, Object> generateAuthCall(String callNumberReceiver) throws NoSuchAlgorithmException {
-        Map<String, Object> map = new HashMap<>();
-        byte[] salt = generateSalt(16); // Gera um salt de 16 bytes
-        byte[] hashedPassword = hashPassword(callNumberReceiver, salt);
-        map.put("salt",bytesToHex(salt) );
-        map.put("hash",bytesToHex(hashedPassword));
-        return map;
+    public static Map<String, Object> generateAuthCall(String callNumberReceiver)  {
+      try {
+          Map<String, Object> map = new HashMap<>();
+          byte[] salt = generateSalt(16); // Gera um salt de 16 bytes
+          byte[] hashedPassword = hashPassword(callNumberReceiver, salt);
+          map.put("salt",bytesToHex(salt) );
+          map.put("hash",bytesToHex(hashedPassword));
+          return map;
+      }catch (NoSuchAlgorithmException e) {
+          throw new BusinessException("Not Accepted");
+      }
+
     }
 
-    public static boolean validatePassword(String providedPassword, String storedHash, String storedSalt) throws NoSuchAlgorithmException {
-        byte[] salt = hexToBytes(storedSalt);
-        byte[] hashedPassword = hashPassword(providedPassword, salt);
-        String hashedPasswordHex = bytesToHex(hashedPassword);
-        return hashedPasswordHex.equals(storedHash);
+    public static boolean validatePassword(String providedPassword, String storedHash, String storedSalt)  {
+        try{
+            byte[] salt = hexToBytes(storedSalt);
+            byte[] hashedPassword = hashPassword(providedPassword, salt);
+            String hashedPasswordHex = bytesToHex(hashedPassword);
+            return hashedPasswordHex.equals(storedHash);
+        }catch (NoSuchAlgorithmException e){
+           throw new BusinessException("Not accepted");
+        }
     }
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
