@@ -17,8 +17,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CallerDataDetailsResponse {
 
-    private Long callerLocation;
     private UUID callId;
+    private String receiveNumber;
+    private String callerNumber;
+    private String carrier;
+    private Long callerLocation;
     private Double callerLatitude;
     private Double callerLongitude;
     private String callerDeviceModel;

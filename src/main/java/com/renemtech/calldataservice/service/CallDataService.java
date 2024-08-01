@@ -127,6 +127,7 @@ public class CallDataService {
                         .callType(detail.getCallType())
                         .callStatus(detail.getCallStatus())
                         .callType(detail.getCallType())
+                        .receiveNumber(detail.getCallData().getReceiveNumber())
                         .build()).toList();
 
         return CallDataDetailsResponse.builder()
