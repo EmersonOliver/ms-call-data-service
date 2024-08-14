@@ -112,7 +112,6 @@ public enum CallStatus {
         //Chamada em espera.
         @Override
         public void build(CallerCallEntity call) {
-            return;
         }
     },
 
@@ -120,7 +119,6 @@ public enum CallStatus {
         //Chamada transferida para outro número.
         @Override
         public void build(CallerCallEntity call) {
-            return;
         }
     },
 

@@ -12,14 +12,12 @@ import com.renemtech.calldataservice.service.CallDataService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.openapi.annotations.headers.Header;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("callDataService")
 public class CallDataServiceResource {

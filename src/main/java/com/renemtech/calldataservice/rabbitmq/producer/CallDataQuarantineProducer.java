@@ -1,7 +1,5 @@
 package com.renemtech.calldataservice.rabbitmq.producer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.renemtech.calldataservice.rabbitmq.message.Quarantine;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

@@ -1,6 +1,7 @@
 package com.renemtech.calldataservice.utils;
 
 import com.renemtech.calldataservice.exceptions.BusinessException;
+import jakarta.ws.rs.core.Response;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,7 +24,7 @@ public class CryptoUtils {
           map.put("hash",bytesToHex(hashedPassword));
           return map;
       }catch (NoSuchAlgorithmException e) {
-          throw new BusinessException("Not Accepted");
+          throw new BusinessException("Not Accepted", Response.Status.UNAUTHORIZED);
       }
 
     }
@@ -35,7 +36,7 @@ public class CryptoUtils {
             String hashedPasswordHex = bytesToHex(hashedPassword);
             return hashedPasswordHex.equals(storedHash);
         }catch (NoSuchAlgorithmException e){
-           throw new BusinessException("Not accepted");
+           throw new BusinessException("Not accepted",Response.Status.UNAUTHORIZED);
         }
     }
     private static String bytesToHex(byte[] bytes) {

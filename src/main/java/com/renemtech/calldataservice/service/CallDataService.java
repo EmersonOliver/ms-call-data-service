@@ -86,7 +86,7 @@ public class CallDataService {
                 this.callLocationDataRespository.findLocationByDataCall(receiverEntity.getCallId())
                         .orElseThrow(BusinessException::notDataFound);
         if (!CryptoUtils.validatePassword(callerNumber, callerEntity.getHashCall(), salt)) {
-            throw new BusinessException("You are receiving a suspicious call!");
+            throw new BusinessException("You are receiving a suspicious call!", Response.Status.ACCEPTED);
         }
         if (!callerEntity.getCallerNumber().equals(callerNumber)) {
             throw new BusinessException("Caller Number is not equals in hash call", Response.Status.CONFLICT);
@@ -114,6 +114,8 @@ public class CallDataService {
                 receiverCallEntity.getCallerLocations().stream().map(detail -> CallerDataDetailsResponse
                         .builder().callerLocation(detail.getCallerLocation())
                         .callerLongitude(detail.getCallerLongitude())
+                        .callerNumber(detail.getCallerNumber())
+                        .carrier(detail.getCallData().getCarrier())
                         .callerAreaCode(detail.getCallerAreaCode())
                         .callerLatitude(detail.getCallerLatitude())
                         .callerLongitude(detail.getCallerLongitude())

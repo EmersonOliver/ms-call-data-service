@@ -5,41 +5,29 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+@Getter
 public class BusinessException extends RuntimeException {
 
-    private String msg = "A generic error occurred while running the application.";
-    private Throwable root;
+    private final Response.Status status;
 
-    @Getter
-    private static Response.Status status;
-
-    @Getter
-    private Response.Status responseStatus;
-
-    public BusinessException() {
+    public BusinessException(Response.Status status) {
+            this.status = status;
     }
 
     public static BusinessException generic() {
-        throw new BusinessException("A generic error occurred while running the application.");
+        throw new BusinessException("A generic error occurred while running the application.", Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     public static BusinessException notDataFound() {
-        status = Arrays.stream(Response.Status.values()).filter(p-> p.getStatusCode() == 422)
+        Response.Status status =  Arrays.stream(Response.Status.values()).filter(p-> p.getStatusCode() == 422)
                 .findFirst().orElse(Response.Status.NOT_FOUND);
-        throw new BusinessException("No information was found with the search parameters");
+        throw new BusinessException("No information was found with the search parameters",status);
     }
 
-    public BusinessException(String message) {
-        super(message);
-    }
-
-    public BusinessException(String message, Throwable cause) {
-        super(message, cause);
-        this.msg = message;
-    }
     public BusinessException(String message, Response.Status status) {
         super(message);
-        this.msg = message;
-        this.responseStatus = status;
+        this.status = status;
     }
+
+
 }
